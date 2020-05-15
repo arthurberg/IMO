@@ -249,7 +249,7 @@ head(mydat2.filter.stand.country)
 # Converts wide data to long and adds problem type
 
 f.long.problem = function(dat){	
-dat2=melt(dat[,c("Year","Country","P1s","P2s","P3s","P4s","P5s","P6s","Gender")],id.vars=c("Year","Country","Gender"),value.name="Score")
+dat2=reshape2::melt(dat[,c("Year","Country","P1s","P2s","P3s","P4s","P5s","P6s","Gender")],id.vars=c("Year","Country","Gender"),value.name="Score")
 
 dat2$id=paste(dat$Year,sapply(strsplit(as.character(dat2$variable),"s"),function(x){x[1]}),sep="_")
 
@@ -275,7 +275,7 @@ avg.scores=t(sapply(split(mydat[,c("P1s","P2s","P3s","P4s","P5s","P6s")],mydat$"
 ## (the average question scores average to 0 over the entire test for each year)
 apply(avg.scores,1,mean)
 
-avg.scores.long=melt(avg.scores)
+avg.scores.long=reshape2::melt(avg.scores)
 ord1=order(avg.scores.long[,"value"],decreasing=T) 
 ord2=order(avg.scores.long[,"value"],decreasing=F) 
 avg.scores.long[ord1,][1:10,]
@@ -287,7 +287,7 @@ f.total=function(x){sum(!is.na(x))}
 correct.scores=t(sapply(split(mydat2[,c("P1s","P2s","P3s","P4s","P5s","P6s")],mydat2$"Year"),apply,2,f.correct))
 total.scores=t(sapply(split(mydat2[,c("P1s","P2s","P3s","P4s","P5s","P6s")],mydat2$"Year"),apply,2,f.total))
 
-correct.scores.long=melt(correct.scores)
+correct.scores.long=reshape2::melt(correct.scores)
 total.scores.long=melt(total.scores)
 
 # Table of Hardest and easiest scores
@@ -303,7 +303,7 @@ df$Problem2=sapply(strsplit(as.character(df$Problem),"s"),function(x){x[1]})
 rownames(df)=paste(df$Year,df$Problem2,sep="_")
 
 # Bring in the problem categories
-pc.long=melt(pc[,c("Year","P1.t","P2.t","P3.t","P4.t","P5.t","P6.t")],id="Year")
+pc.long=reshape2::melt(pc[,c("Year","P1.t","P2.t","P3.t","P4.t","P5.t","P6.t")],id="Year")
 
 rownames(pc.long)=paste(pc.long$Year,sapply(strsplit(as.character(pc.long$variable),".",fixed=T),function(x){x[1]}),sep="_")
 
@@ -326,55 +326,6 @@ print(xtable(cbind(mat1,mat2),digits=c(F,rep(c(F,F,F,1,2),2))),include.rownames=
 
 # double check the proportion of correct responses
 mean(mydat2[mydat2$Year==2017,"P1s"]==7) 
-
-# Scores difficulty and problem type
-
-## add problem type 1/4, 2/5, and 3/6 to dataframe
-df$Problem3=mapvalues(df$Problem2,from=paste("P",1:6,sep=""),to=rep(c("Prob 1/Prob 4","Prob 2/Prob 5","Prob 3/Prob 6"),2))
-
-df$P.type2=mapvalues(df$P.type,from=c("A","C","G","N"),to=c("Alg","Com","Geo","Num"))
-
-(tab=table(df$Problem3,df$P.type2))
-
-##########################
-##### FIGURE 2A    ######
-##########################
-
-dev.new(width=4, height=3, unit="in")
-
-g=df %>%
-  ggplot( aes(x=P.type2, y=S.Score, fill=P.type2)) +
-    geom_boxplot(show.legend=F) +
-    geom_jitter(color="black", size=0.4, alpha=0.2,width=.2) +
-    theme_ipsum(plot_margin=margin(t=2),base_family = "Comic Sans MS",plot_title_size=13) +
-      theme(plot.tag = element_text(size = 13),text = element_text(family = "Comic Sans MS"),legend.position="none")+ 
-    ggtitle("(A) Standardized Scores by Prob Type") +
-    xlab("") + ylab("")
-g
-
-ggsave("fig2a.png",type="cairo",dpi=600)
-
-###############################################
-###############################################
-
-##########################
-##### FIGURE 2B    ######
-##########################
-
-gg_color_hue <- function(n) {
-  hues = seq(15, 375, length = n + 1)
-  hcl(h = hues, l = 65, c = 100)[1:n]
-}
-
-png("fig2b.png",width=4,height=3,units="in",res=600)
-#dev.new(width=4, height=3, unit="in")
-par(mar=c(1,2,2,0),family="Comic Sans MS")
-mosaicplot(Problem3~P.type2,data=df,col=gg_color_hue(4),ylab="",xlab="",main="",cex.axis=.85)
-title("(B) Mosaic Plot",cex.main=.95)
-dev.off()
-
-###############################################
-###############################################
 
 ##############################
 # Section: Analysis by Country
@@ -419,7 +370,7 @@ xtable(df3,digits=c(0,2,0,0))
 ###############################################
 
 #####################
-##### FIGURE 3 ######
+##### FIGURE 2 ######
 #####################
 
 df3=mydat[grep("China|Russia|United States|South Korea|Romania|North Korea",mydat$Country) ,c("Country","Year","Total")]
@@ -430,7 +381,7 @@ ggplot(df3, aes(Year, Total, colour=Country)) +
   geom_point(alpha=.8) + ylab(NULL)+stat_smooth(geom="line",method="loess",formula="y~x",alpha=.8,size=1.2) + ggtitle("Country Performance by Year")+ theme_ipsum(plot_margin=margin(t=2,l=2,r=0),base_family = "Comic Sans MS",plot_title_size=13)+
   theme(plot.title = element_text(hjust = 0.5)) + labs(color=NULL)
 
-ggsave("fig3.png",type="cairo",dpi=600)
+ggsave("fig2.png",type="cairo",dpi=600)
 
 ###############################################
 ###############################################
@@ -438,6 +389,59 @@ ggsave("fig3.png",type="cairo",dpi=600)
 ##############################
 # Section: Analysis by Problem Type
 ##############################
+
+# Scores difficulty and problem type
+
+## add problem type 1/4, 2/5, and 3/6 to dataframe
+df$Problem3=mapvalues(df$Problem2,from=paste("P",1:6,sep=""),to=rep(c("Prob 1/Prob 4","Prob 2/Prob 5","Prob 3/Prob 6"),2))
+
+df$P.type2=mapvalues(df$P.type,from=c("A","C","G","N"),to=c("Alg","Com","Geo","Num"))
+
+(tab=table(df$Problem3,df$P.type2))
+
+##########################
+##### FIGURE 3A    ######
+##########################
+
+dev.new(width=4, height=3, unit="in")
+
+g=df %>%
+  ggplot( aes(x=P.type2, y=S.Score, fill=P.type2)) +
+    geom_boxplot(show.legend=F) +
+    geom_jitter(color="black", size=0.4, alpha=0.2,width=.2) +
+    theme_ipsum(plot_margin=margin(t=2),base_family = "Comic Sans MS",plot_title_size=13) +
+      theme(plot.tag = element_text(size = 13),text = element_text(family = "Comic Sans MS"),legend.position="none")+ 
+    ggtitle("(A) Standardized Scores by Prob Type") +
+    xlab("") + ylab("")
+g
+
+ggsave("fig3a.png",type="cairo",dpi=600)
+
+###############################################
+###############################################
+
+##########################
+##### FIGURE 3B    ######
+##########################
+
+gg_color_hue <- function(n) {
+  hues = seq(15, 375, length = n + 1)
+  hcl(h = hues, l = 65, c = 100)[1:n]
+}
+
+png("fig3b.png",width=4,height=3,units="in",res=600)
+#dev.new(width=4, height=3, unit="in")
+par(mar=c(1,2,2,0),family="Comic Sans MS")
+mosaicplot(Problem3~P.type2,data=df,col=gg_color_hue(4),ylab="",xlab="",main="",cex.axis=.85)
+title("(B) Mosaic Plot",cex.main=.95)
+dev.off()
+
+###############################################
+###############################################
+
+
+
+
 
 tmp=f.stand.problem(f.country.agg(f.filter(mydat2)))
 head(tmp)
@@ -527,11 +531,11 @@ ggsave("fig4.png",type="cairo",dpi=600)
 #Host
 
 tmp=f.stand.year(f.country.agg(f.filter(mydat2)))
-tmp2=melt(tmp[,c("Year","Country","Total")],id.vars=c("Year","Country"),value.name="Score")
+tmp2=reshape2::melt(tmp[,c("Year","Country","Total")],id.vars=c("Year","Country"),value.name="Score")
 mydat=tmp2[,c("Year","Country","Score")]
 
 tmp=f.country.agg(f.filter(mydat2))
-tmp2=melt(tmp[,c("Year","Country","Total")],id.vars=c("Year","Country"),value.name="Score")
+tmp2=reshape2::melt(tmp[,c("Year","Country","Total")],id.vars=c("Year","Country"),value.name="Score")
 mydat.original.scale=tmp2[,c("Year","Country","Score")]
 
 # Host each year
@@ -604,7 +608,7 @@ ggsave("fig5.png",type="cairo",dpi=600)
 
 # home-advantage for home-country problem contributions
 
-pc3=melt(pc2[,c("Year","P1.c","P2.c","P3.c","P4.c","P5.c","P6.c")],id=c("Year"))
+pc3=reshape2::melt(pc2[,c("Year","P1.c","P2.c","P3.c","P4.c","P5.c","P6.c")],id=c("Year"))
 
 rownames(pc3)=paste(pc3$Year,sapply(strsplit(as.character(pc3$variable),".",fixed=T),function(x){x[1]}),sep="_")
 
@@ -736,7 +740,7 @@ dev.new(width=7, height=4, unit="in")
 
 theme_set(theme_void())
 ggplot(df4.map, aes(long, lat, group = group, alpha = tot))+
-  geom_polygon(aes(fill = prop3), color = "gray",size = 0.05)  + scale_fill_viridis_d(option = "D",direction=1,na.value="gray95",name = "% Female",labels=c("0%-2.5%","2.5%-5%","5%-10%","10%-20%","20%-75%","NA"))  + guides(alpha = F) +scale_alpha(range=c(.2,1))+ theme(text=element_text(size=13,family="Comic Sans MS"),plot.margin = unit(c(0, 0, 0, -1), "cm"))
+  geom_polygon(aes(fill = prop3), color = "gray",size = 0.05)  + scale_fill_viridis_d(option = "D",direction=1,na.value="gray95",name = "% Female",labels=c("0%-2.5%","2.5%-5%","5%-10%","10%-20%","20%-75%","NA"))  + guides(alpha = F) +scale_alpha(range=c(.2,1))+ theme(text=element_text(size=13,family="Comic Sans MS"),plot.margin = unit(c(0, 0, 0, -1), "cm"),plot.title = element_text(hjust = 0.5,face = "bold")) + ggtitle("Proportion of Females by Country")
   
 ggsave("fig7.png",type="cairo",dpi=600)
 
@@ -799,8 +803,7 @@ dev.new(width=6, height=2.5, unit="in")
 # compute lower and upper whiskers
 ylim1 = boxplot.stats(mydatB$Score)$stats[c(1, 5)]
 
-ggplot(mydatB, aes(x=Gender, y=Score, fill=P.type2))+    theme_ipsum(plot_margin=margin(t=2),base_family = "Comic Sans MS",plot_title_size=13)+coord_cartesian(ylim = ylim1*1.05)+ labs(fill=NULL)+ geom_violin(draw_quantiles = c(0.25, 0.5, 0.75))
-
+ggplot(mydatB, aes(x=Gender, y=Score, fill=P.type2))+    theme_ipsum(plot_margin=margin(t=2),base_family = "Comic Sans MS",plot_title_size=13)+coord_cartesian(ylim = ylim1*1.05)+ labs(fill=NULL)+ geom_violin(draw_quantiles = c(0.25, 0.5, 0.75))+theme(plot.title = element_text(hjust = 0.5)) + ggtitle("Standardized Scores by Problem Category and Gender")
 
 ggsave("fig8.png",type="cairo",dpi=600)
 
