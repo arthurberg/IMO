@@ -375,6 +375,8 @@ xtable(df3,digits=c(0,2,0,0))
 
 df3=mydat[grep("China|Russia|United States|South Korea|Romania|North Korea",mydat$Country) ,c("Country","Year","Total")]
 
+df3$Country=factor(df3$Country,levels=c("United States","South Korea","China","North Korea","Russia","Romania"))
+
 dev.new(width=8, height=4, unit="in")
 
 ggplot(df3, aes(Year, Total, colour=Country)) +
