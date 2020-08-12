@@ -312,6 +312,7 @@ df$P.type=pc.long[rownames(df),"value"]
 df1=df[ord1,]
 df2=df[ord2,]
 
+### Note that "Problem2" refers to a modified form of "Problem" in the dataframes, which converts P1s to P1, P2s to P2, etc.
 mat1=df1[1:n,c("Year","Problem2","P.type","Prop","S.Score")]
 mat2=df2[1:n,c("Year","Problem2","P.type","Prop","S.Score")]
 
@@ -380,7 +381,7 @@ df3$Country=factor(df3$Country,levels=c("United States","South Korea","China","N
 dev.new(width=8, height=4, unit="in")
 
 ggplot(df3, aes(Year, Total, colour=Country)) +
-  geom_point(alpha=.8) + ylab(NULL)+stat_smooth(geom="line",method="loess",formula="y~x",alpha=.8,size=1.2) + ggtitle("Country Performance by Year")+ theme_ipsum(plot_margin=margin(t=2,l=2,r=0),base_family = "Comic Sans MS",plot_title_size=13)+
+  geom_point(alpha=.8) + ylab(NULL)+stat_smooth(geom="line",method="loess",formula="y~x",alpha=.8,size=1.2) + ggtitle("Country Performance By Year")+ theme_ipsum(plot_margin=margin(t=2,l=2,r=0),base_family = "Comic Sans MS",plot_title_size=13)+
   theme(plot.title = element_text(hjust = 0.5)) + labs(color=NULL)
 
 ggsave("fig2.png",type="cairo",dpi=600)
@@ -413,7 +414,7 @@ g=df %>%
     geom_jitter(color="black", size=0.4, alpha=0.2,width=.2) +
     theme_ipsum(plot_margin=margin(t=2),base_family = "Comic Sans MS",plot_title_size=13) +
       theme(plot.tag = element_text(size = 13),text = element_text(family = "Comic Sans MS"),legend.position="none")+ 
-    ggtitle("(A) Standardized Scores by Prob Type") +
+    ggtitle("(A) Standardized Scores By Prob Type") +
     xlab("") + ylab("")
 g
 
@@ -734,6 +735,21 @@ df4.map=right_join(df4,world_map, by = "region")
 
 rownames(df4)[!is.element(rownames(df4),unique(world_map$region))]
 
+##########################################
+##### Old FIGURE 7 (with opacity) ######
+##########################################
+
+dev.new(width=7, height=4, unit="in")
+
+theme_set(theme_void())
+ggplot(df4.map, aes(long, lat, group = group, alpha = tot))+
+  geom_polygon(aes(fill = prop3), color = "gray",size = 0.05)  + scale_fill_viridis_d(option = "D",direction=1,na.value="gray95",name = "% Female",labels=c("0%-2.5%","2.5%-5%","5%-10%","10%-20%","20%-75%","NA"))  + guides(alpha = F) +scale_alpha(range=c(.2,1))+ theme(text=element_text(size=13,family="Comic Sans MS"),plot.margin = unit(c(0, 0, 0, -1), "cm"),plot.title = element_text(hjust = 0.5,face = "bold")) + ggtitle("Proportion of Female Participation By Country")
+  
+ggsave("fig7.png",type="cairo",dpi=600)
+
+#####################################
+#####################################
+
 #####################
 ##### FIGURE 7 ######
 #####################
@@ -741,13 +757,14 @@ rownames(df4)[!is.element(rownames(df4),unique(world_map$region))]
 dev.new(width=7, height=4, unit="in")
 
 theme_set(theme_void())
-ggplot(df4.map, aes(long, lat, group = group, alpha = tot))+
-  geom_polygon(aes(fill = prop3), color = "gray",size = 0.05)  + scale_fill_viridis_d(option = "D",direction=1,na.value="gray95",name = "% Female",labels=c("0%-2.5%","2.5%-5%","5%-10%","10%-20%","20%-75%","NA"))  + guides(alpha = F) +scale_alpha(range=c(.2,1))+ theme(text=element_text(size=13,family="Comic Sans MS"),plot.margin = unit(c(0, 0, 0, -1), "cm"),plot.title = element_text(hjust = 0.5,face = "bold")) + ggtitle("Proportion of Females by Country")
+ggplot(df4.map, aes(long, lat, group = group))+
+  geom_polygon(aes(fill = prop3), color = "gray",size = 0.05)  + scale_fill_viridis_d(option = "D",direction=1,na.value="gray95",name = "% Female",labels=c("0%-2.5%","2.5%-5%","5%-10%","10%-20%","20%-75%","NA"))  + guides(alpha = F) + theme(text=element_text(size=13,family="Comic Sans MS"),plot.margin = unit(c(0, 0, 0, -1), "cm"),plot.title = element_text(hjust = 0.5,face = "bold")) + ggtitle("Proportion of Female Participation By Country")
   
 ggsave("fig7.png",type="cairo",dpi=600)
 
 #####################################
 #####################################
+
 
 
 ord1=order(tab3[,"prop"],decreasing=FALSE)
@@ -805,7 +822,7 @@ dev.new(width=6, height=2.5, unit="in")
 # compute lower and upper whiskers
 ylim1 = boxplot.stats(mydatB$Score)$stats[c(1, 5)]
 
-ggplot(mydatB, aes(x=Gender, y=Score, fill=P.type2))+    theme_ipsum(plot_margin=margin(t=2),base_family = "Comic Sans MS",plot_title_size=13)+coord_cartesian(ylim = ylim1*1.05)+ labs(fill=NULL)+ geom_violin(draw_quantiles = c(0.25, 0.5, 0.75))+theme(plot.title = element_text(hjust = 0.5)) + ggtitle("Standardized Scores by Problem Category and Gender")
+ggplot(mydatB, aes(x=Gender, y=Score, fill=P.type2))+    theme_ipsum(plot_margin=margin(t=2),base_family = "Comic Sans MS",plot_title_size=13)+coord_cartesian(ylim = ylim1*1.05)+ labs(fill=NULL)+ geom_violin(draw_quantiles = c(0.25, 0.5, 0.75))+theme(plot.title = element_text(hjust = 0.5)) + ggtitle("Standardized Scores By Problem Category and Gender")
 
 ggsave("fig8.png",type="cairo",dpi=600)
 
